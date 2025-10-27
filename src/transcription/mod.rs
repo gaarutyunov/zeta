@@ -1,8 +1,12 @@
+mod apple_speech;
+mod browser_speech;
 mod claude;
 mod google;
 mod openai;
 mod whisper_web;
 
+pub use apple_speech::AppleSpeechService;
+pub use browser_speech::BrowserSpeechService;
 pub use claude::ClaudeTranscriptionService;
 pub use google::GoogleTranscriptionService;
 pub use openai::OpenAITranscriptionService;
@@ -17,7 +21,9 @@ pub enum TranscriptionProvider {
     Claude,
     OpenAI,
     GoogleCloud,
+    BrowserSpeech,
     WhisperWeb,
+    AppleSpeech,
 }
 
 impl TranscriptionProvider {
@@ -26,7 +32,9 @@ impl TranscriptionProvider {
             Self::Claude => "Claude AI",
             Self::OpenAI => "OpenAI Whisper",
             Self::GoogleCloud => "Google Cloud",
+            Self::BrowserSpeech => "Browser Speech Recognition",
             Self::WhisperWeb => "Local Whisper (WebGPU)",
+            Self::AppleSpeech => "Apple Speech (iOS/macOS)",
         }
     }
 
@@ -35,27 +43,62 @@ impl TranscriptionProvider {
             Self::Claude => "Best for structured notes with auto-generated titles and tags",
             Self::OpenAI => "High-quality transcription with GPT-powered note structuring",
             Self::GoogleCloud => "Fast and accurate Google Speech-to-Text API",
+            Self::BrowserSpeech => "Free browser-based recognition (Chrome, Edge, Safari)",
             Self::WhisperWeb => "Privacy-first local transcription using WebGPU (experimental)",
+            Self::AppleSpeech => "On-device Apple Speech framework for iOS and macOS",
         }
     }
 
     pub fn requires_api_key(&self) -> bool {
         match self {
             Self::Claude | Self::OpenAI | Self::GoogleCloud => true,
-            Self::WhisperWeb => false,
+            Self::BrowserSpeech | Self::WhisperWeb | Self::AppleSpeech => false,
         }
     }
 
     pub fn supports_web(&self) -> bool {
-        true
+        match self {
+            Self::BrowserSpeech | Self::WhisperWeb => true,
+            Self::Claude | Self::OpenAI | Self::GoogleCloud => true,
+            Self::AppleSpeech => false,
+        }
+    }
+
+    pub fn supports_ios(&self) -> bool {
+        match self {
+            Self::AppleSpeech => true,
+            Self::Claude | Self::OpenAI | Self::GoogleCloud => true,
+            Self::BrowserSpeech | Self::WhisperWeb => false,
+        }
     }
 
     pub fn all() -> Vec<Self> {
         vec![
+            Self::BrowserSpeech,
             Self::Claude,
             Self::OpenAI,
             Self::GoogleCloud,
             Self::WhisperWeb,
+            Self::AppleSpeech,
+        ]
+    }
+
+    pub fn web_providers() -> Vec<Self> {
+        vec![
+            Self::BrowserSpeech,
+            Self::Claude,
+            Self::OpenAI,
+            Self::GoogleCloud,
+            Self::WhisperWeb,
+        ]
+    }
+
+    pub fn ios_providers() -> Vec<Self> {
+        vec![
+            Self::AppleSpeech,
+            Self::Claude,
+            Self::OpenAI,
+            Self::GoogleCloud,
         ]
     }
 }
@@ -112,7 +155,9 @@ impl TranscriptionConfig {
                     Err(anyhow!("Google Cloud API key not set"))
                 }
             }
+            TranscriptionProvider::BrowserSpeech => Ok(Box::new(BrowserSpeechService::new())),
             TranscriptionProvider::WhisperWeb => Ok(Box::new(WhisperWebService::new())),
+            TranscriptionProvider::AppleSpeech => Ok(Box::new(AppleSpeechService::new())),
         }
     }
 }

@@ -4,18 +4,26 @@ A modern, voice-first Zettelkasten note-taking application built with Dioxus and
 
 ## Features
 
-- **Multiple Transcription Providers**: Choose from Claude AI, OpenAI Whisper, Google Cloud Speech-to-Text, or local Whisper (WebGPU)
+- **6 Transcription Providers**: Browser Speech API (FREE), Apple Speech (iOS/macOS), Claude AI, OpenAI Whisper, Google Cloud, or local Whisper (WebGPU)
+- **Free Options Available**: Use Browser Speech Recognition or Apple Speech without any API keys
 - **Voice-First Interface**: Create notes using your voice with AI-powered transcription
 - **Zettelkasten Method**: Organize your thoughts with linked, atomic notes
 - **Smart Tagging**: Automatic tag generation from voice notes
-- **Cross-Platform**: Works as a web app or desktop application
+- **Cross-Platform**: Works as a web app, desktop application, or iOS app
 - **Local-First**: Your notes are stored locally with SurrealDB
 - **Beautiful UI**: Modern, dark-themed interface
-- **Privacy Options**: Use local Whisper for offline, private transcription
+- **Privacy Options**: Use local Whisper or Apple Speech for offline, private transcription
 
 ## Transcription Providers
 
 Zeta supports multiple voice transcription services:
+
+### Browser Speech Recognition ⚡ New
+- **FREE** - No API key required
+- Built into modern browsers (Chrome, Edge, Safari)
+- Works with [Web Speech API](https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognition)
+- Best for: Quick notes without setup
+- Note: Requires internet connection for most browsers
 
 ### Claude AI (Recommended)
 - Best for structured notes with auto-generated titles and tags
@@ -31,6 +39,13 @@ Zeta supports multiple voice transcription services:
 - Fast and accurate transcription
 - Good for quick voice notes
 - Requires: [Google Cloud API key](https://console.cloud.google.com/apis/credentials)
+
+### Apple Speech (iOS/macOS) ⚡ New
+- On-device transcription using [Apple Speech framework](https://developer.apple.com/documentation/speech)
+- **FREE** - No API key required
+- Privacy-first: runs entirely on your device
+- Requires: iOS 10.0+ or macOS 10.15+
+- Note: Requires iOS app build with proper entitlements
 
 ### Local Whisper (WebGPU)  🚧 Experimental
 - Privacy-first: runs entirely in your browser
@@ -142,6 +157,8 @@ zeta/
 │   │   └── settings.rs      # Settings UI component
 │   └── transcription/
 │       ├── mod.rs           # Transcription service trait
+│       ├── browser_speech.rs # Web Speech Recognition API
+│       ├── apple_speech.rs   # Apple Speech framework (iOS/macOS)
 │       ├── claude.rs        # Claude AI integration
 │       ├── openai.rs        # OpenAI Whisper integration
 │       ├── google.rs        # Google Cloud Speech-to-Text
@@ -165,12 +182,15 @@ zeta/
 
 ## Technologies Used
 
-- [Dioxus](https://dioxuslabs.com/) - Rust UI framework
+- [Dioxus 0.7](https://dioxuslabs.com/) - Rust UI framework
 - [SurrealDB](https://surrealdb.com/) - Multi-model database
-- [Claude AI](https://www.anthropic.com/claude) - AI transcription and structuring
-- [OpenAI Whisper](https://platform.openai.com/docs/guides/speech-to-text) - Speech-to-text API
-- [Google Cloud Speech-to-Text](https://cloud.google.com/speech-to-text) - Cloud transcription service
-- [Whisper Web (Transformers.js)](https://github.com/xenova/whisper-web) - Local browser-based transcription
+- **Transcription Services:**
+  - [Web Speech API](https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognition) - Browser-native speech recognition
+  - [Apple Speech Framework](https://developer.apple.com/documentation/speech) - On-device iOS/macOS transcription
+  - [Claude AI](https://www.anthropic.com/claude) - AI transcription and structuring
+  - [OpenAI Whisper](https://platform.openai.com/docs/guides/speech-to-text) - Speech-to-text API
+  - [Google Cloud Speech-to-Text](https://cloud.google.com/speech-to-text) - Cloud transcription service
+  - [Whisper Web (Transformers.js)](https://github.com/xenova/whisper-web) - Local browser-based transcription
 - Web Audio API - Browser audio recording
 
 ## Contributing

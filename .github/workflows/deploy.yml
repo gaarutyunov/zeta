@@ -47,7 +47,7 @@ jobs:
         run: cargo install dioxus-cli --locked || cargo install dioxus-cli
 
       - name: Build web app
-        run: dx build --release --features web
+        run: dx build --release --web
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
