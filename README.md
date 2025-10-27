@@ -216,7 +216,7 @@ zeta/
 
 ## Technologies Used
 
-- [Dioxus 0.7](https://dioxuslabs.com/) - Rust UI framework
+- [Dioxus 0.6](https://dioxuslabs.com/) - Rust UI framework
 - [SurrealDB](https://surrealdb.com/) - Multi-model database
 - **Transcription Services:**
   - [Web Speech API](https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognition) - Browser-native speech recognition
