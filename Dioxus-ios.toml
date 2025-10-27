@@ -1,0 +1,32 @@
+[application]
+name = "zeta"
+default_platform = "ios"
+
+[ios.app]
+name = "Zeta"
+bundle_identifier = "com.zeta.app"
+display_name = "Zeta - Voice Zettelkasten"
+version = "0.1.0"
+build = "1"
+
+[ios.capabilities]
+# Required for speech recognition
+speech_recognition = true
+# Required for microphone access
+microphone = true
+
+[ios.info_plist]
+# Privacy descriptions required by App Store
+NSMicrophoneUsageDescription = "Zeta needs microphone access to record voice notes"
+NSSpeechRecognitionUsageDescription = "Zeta uses speech recognition to transcribe your voice notes"
+
+[ios.resource]
+# App icons and resources
+icon = []
+resources = ["assets/*"]
+
+[bundle]
+identifier = "com.zeta.app"
+publisher = "Zeta"
+icon = []
+resources = ["assets/*"]

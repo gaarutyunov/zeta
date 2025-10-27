@@ -77,6 +77,26 @@ cd zeta
 cargo run --features desktop
 ```
 
+### For iOS
+
+1. Install iOS targets:
+```bash
+rustup target add aarch64-apple-ios
+rustup target add aarch64-apple-ios-sim
+```
+
+2. Build for iOS:
+```bash
+dx build --platform ios --release
+```
+
+3. Run on simulator:
+```bash
+dx serve --platform ios
+```
+
+For detailed iOS setup instructions, see [ios/README.md](ios/README.md).
+
 ## Development
 
 ### Running in Development Mode
@@ -93,6 +113,13 @@ For desktop development:
 cargo run --features desktop --no-default-features
 ```
 
+For iOS development:
+```bash
+dx serve --platform ios
+# or build manually
+cargo build --target aarch64-apple-ios-sim --features ios
+```
+
 ### Building for Production
 
 Web build (default):
@@ -105,6 +132,13 @@ dx build --release --platform web
 Desktop build:
 ```bash
 cargo build --release --features desktop --no-default-features
+```
+
+iOS build:
+```bash
+dx build --platform ios --release
+# or for specific device
+cargo build --target aarch64-apple-ios --features ios --release
 ```
 
 ## Configuration

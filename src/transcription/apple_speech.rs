@@ -34,17 +34,17 @@ impl AppleSpeechService {
     }
 
     fn check_availability() -> bool {
-        // Check if we're running on iOS/macOS
-        #[cfg(any(target_os = "ios", target_os = "macos"))]
+        // Check if we have iOS feature enabled
+        #[cfg(feature = "ios")]
         {
             // In a real implementation, this would check:
             // - SFSpeechRecognizer.authorizationStatus()
             // - Device language support
             // - Network availability (for some languages)
-            true
+            cfg!(target_os = "ios")
         }
 
-        #[cfg(not(any(target_os = "ios", target_os = "macos")))]
+        #[cfg(not(feature = "ios"))]
         {
             false
         }
@@ -80,7 +80,7 @@ impl TranscriptionService for AppleSpeechService {
         _audio_data: &[u8],
         _audio_format: &str,
     ) -> Result<TranscriptionResponse> {
-        #[cfg(any(target_os = "ios", target_os = "macos"))]
+        #[cfg(all(feature = "ios", target_os = "ios"))]
         {
             // In a real implementation, this would:
             //
@@ -124,10 +124,10 @@ impl TranscriptionService for AppleSpeechService {
             ));
         }
 
-        #[cfg(not(any(target_os = "ios", target_os = "macos")))]
+        #[cfg(not(all(feature = "ios", target_os = "ios")))]
         {
             Err(anyhow!(
-                "Apple Speech framework is only available on iOS and macOS"
+                "Apple Speech framework is only available on iOS with the 'ios' feature enabled"
             ))
         }
     }
