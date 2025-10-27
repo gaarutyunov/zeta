@@ -1,0 +1,20 @@
+[application]
+name = "zeta"
+default_platform = "web"
+
+[web.app]
+title = "Zeta - Voice Zettelkasten"
+base_path = "zeta"
+
+[web.watcher]
+
+[web.resource]
+style = ["assets/style.css"]
+
+[web.resource.dev]
+
+[bundle]
+identifier = "com.zeta.app"
+publisher = "Zeta"
+icon = []
+resources = ["assets/*"]
