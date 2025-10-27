@@ -28,7 +28,7 @@ gloo-timers = { version = "0.3", optional = true }
 base64 = "0.22"
 
 [features]
-default = ["desktop"]
+default = ["web"]
 desktop = ["surrealdb"]
 web = ["wasm-bindgen", "wasm-bindgen-futures", "web-sys", "js-sys", "gloo-timers"]
 

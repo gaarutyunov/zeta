@@ -66,26 +66,30 @@ cargo run --features desktop
 
 ### Running in Development Mode
 
-For web development:
+For web development (default):
 ```bash
-dx serve --features web
+dx serve
+# or with explicit platform
+dx serve --platform web
 ```
 
 For desktop development:
 ```bash
-cargo run --features desktop
+cargo run --features desktop --no-default-features
 ```
 
 ### Building for Production
 
-Web build:
+Web build (default):
 ```bash
-dx build --release --features web
+dx build --release
+# or with explicit platform
+dx build --release --platform web
 ```
 
 Desktop build:
 ```bash
-cargo build --release --features desktop
+cargo build --release --features desktop --no-default-features
 ```
 
 ## Configuration
