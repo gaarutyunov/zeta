@@ -25,10 +25,10 @@ objc = { version = "0.2", optional = true }
 cocoa-foundation = { version = "0.1", optional = true }
 block = { version = "0.1", optional = true }
 
-[target.'cfg(target_arch = "wasm32")'.dependencies]
-wasm-bindgen = "0.2"
-wasm-bindgen-futures = "0.4"
-web-sys = { version = "0.3", features = [
+# Web dependencies (optional but must be declared for reqwest compatibility)
+wasm-bindgen = { version = "0.2", optional = true }
+wasm-bindgen-futures = { version = "0.4", optional = true }
+web-sys = { version = "0.3", optional = true, features = [
     "AudioContext",
     "MediaRecorder",
     "MediaStream",
@@ -47,13 +47,15 @@ web-sys = { version = "0.3", features = [
     "SpeechRecognitionErrorEvent",
     "ReadableStream",
 ] }
-js-sys = "0.3"
-gloo-timers = "0.3"
+js-sys = { version = "0.3", optional = true }
+gloo-timers = { version = "0.3", optional = true }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
 
 [features]
-default = []
+default = ["web"]
 desktop = ["surrealdb"]
-web = []
+web = ["wasm-bindgen", "wasm-bindgen-futures", "web-sys", "js-sys", "gloo-timers"]
 ios = ["objc", "cocoa-foundation", "block"]
 
 [[bin]]
