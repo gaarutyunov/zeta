@@ -44,7 +44,12 @@ jobs:
             ${{ runner.os }}-cargo-
 
       - name: Install Dioxus CLI
-        run: cargo install dioxus-cli --locked || cargo install dioxus-cli
+        run: |
+          if ! command -v dx &> /dev/null; then
+            cargo install dioxus-cli --locked || cargo install dioxus-cli
+          else
+            echo "Dioxus CLI already installed"
+          fi
 
       - name: Build web app
         run: dx build --release --platform web
