@@ -47,7 +47,7 @@ jobs:
         run: dx build --platform ios --release
 
       - name: Upload iOS artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ios-app
           path: |
@@ -98,7 +98,7 @@ jobs:
         run: cargo build --target aarch64-apple-ios-sim --features ios --release
 
       - name: Upload iOS Simulator artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ios-simulator-app
           path: target/aarch64-apple-ios-sim/release/zeta
