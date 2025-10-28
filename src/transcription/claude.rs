@@ -1,9 +1,10 @@
 use crate::models::TranscriptionResponse;
+use crate::transcription::{TranscriptionProvider, TranscriptionService};
 use anyhow::{anyhow, Result};
+use async_trait::async_trait;
 use base64::{engine::general_purpose::STANDARD as BASE64, Engine};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
-use serde_json::json;
 
 const CLAUDE_API_URL: &str = "https://api.anthropic.com/v1/messages";
 
@@ -19,7 +20,7 @@ enum ContentBlock {
     Text {
         #[serde(rename = "type")]
         type_: String,
-        text: String
+        text: String,
     },
     Document {
         #[serde(rename = "type")]
@@ -53,12 +54,12 @@ struct ClaudeContent {
     text: String,
 }
 
-pub struct ClaudeClient {
+pub struct ClaudeTranscriptionService {
     api_key: String,
     client: Client,
 }
 
-impl ClaudeClient {
+impl ClaudeTranscriptionService {
     pub fn new(api_key: String) -> Self {
         Self {
             api_key,
@@ -66,19 +67,26 @@ impl ClaudeClient {
         }
     }
 
-    pub async fn transcribe_audio(
-        &self,
-        audio_data: &str,
-        audio_format: &str,
-    ) -> Result<TranscriptionResponse> {
-        // Determine media type based on format
-        let media_type = match audio_format {
+    fn get_media_type(format: &str) -> &str {
+        match format {
             "webm" => "audio/webm",
             "mp3" => "audio/mpeg",
             "wav" => "audio/wav",
             "ogg" => "audio/ogg",
             _ => "audio/webm",
-        };
+        }
+    }
+}
+
+#[async_trait(?Send)]
+impl TranscriptionService for ClaudeTranscriptionService {
+    async fn transcribe_audio(
+        &self,
+        audio_data: &[u8],
+        audio_format: &str,
+    ) -> Result<TranscriptionResponse> {
+        let audio_base64 = BASE64.encode(audio_data);
+        let media_type = Self::get_media_type(audio_format);
 
         let request = ClaudeRequest {
             model: "claude-3-5-sonnet-20241022".to_string(),
@@ -91,7 +99,7 @@ impl ClaudeClient {
                         source: DocumentSource {
                             type_: "base64".to_string(),
                             media_type: media_type.to_string(),
-                            data: audio_data.to_string(),
+                            data: audio_base64,
                         },
                     },
                     ContentBlock::Text {
@@ -105,7 +113,8 @@ Respond with a JSON object with this exact structure:
   "tags": ["tag1", "tag2", "tag3"]
 }
 
-The title should capture the main idea. Include 2-5 relevant tags that categorize the content. Make the transcription accurate and well-formatted."#.to_string(),
+The title should capture the main idea. Include 2-5 relevant tags that categorize the content. Make the transcription accurate and well-formatted."#
+                            .to_string(),
                     },
                 ],
             }],
@@ -129,10 +138,9 @@ The title should capture the main idea. Include 2-5 relevant tags that categoriz
         let claude_response: ClaudeResponse = response.json().await?;
 
         if let Some(content) = claude_response.content.first() {
-            // Parse the JSON response from Claude
             let text = &content.text;
 
-            // Try to extract JSON from the response
+            // Extract JSON from the response
             let json_str = if let Some(start) = text.find('{') {
                 if let Some(end) = text.rfind('}') {
                     &text[start..=end]
@@ -149,10 +157,7 @@ The title should capture the main idea. Include 2-5 relevant tags that categoriz
                         .as_str()
                         .unwrap_or("Untitled Note")
                         .to_string();
-                    let transcription = json["text"]
-                        .as_str()
-                        .unwrap_or(text)
-                        .to_string();
+                    let transcription = json["text"].as_str().unwrap_or(text).to_string();
                     let tags = json["tags"]
                         .as_array()
                         .map(|arr| {
@@ -168,17 +173,22 @@ The title should capture the main idea. Include 2-5 relevant tags that categoriz
                         tags,
                     })
                 }
-                Err(_) => {
-                    // If JSON parsing fails, use the raw text
-                    Ok(TranscriptionResponse {
-                        text: text.clone(),
-                        title: "Voice Note".to_string(),
-                        tags: vec![],
-                    })
-                }
+                Err(_) => Ok(TranscriptionResponse {
+                    text: text.clone(),
+                    title: "Voice Note".to_string(),
+                    tags: vec![],
+                }),
             }
         } else {
             Err(anyhow!("No content in Claude response"))
         }
+    }
+
+    fn provider(&self) -> TranscriptionProvider {
+        TranscriptionProvider::Claude
+    }
+
+    fn is_available(&self) -> bool {
+        !self.api_key.is_empty()
     }
 }

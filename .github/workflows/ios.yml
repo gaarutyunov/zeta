@@ -1,0 +1,115 @@
+name: Build iOS App
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: aarch64-apple-ios
+          override: true
+
+      - name: Add iOS targets
+        run: |
+          rustup target add aarch64-apple-ios
+          rustup target add x86_64-apple-ios
+          rustup target add aarch64-apple-ios-sim
+
+      - name: Cache cargo
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-ios-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-ios-
+
+      - name: Install Dioxus CLI
+        run: |
+          if ! command -v dx &> /dev/null; then
+            cargo install dioxus-cli --locked || cargo install dioxus-cli
+          else
+            echo "Dioxus CLI already installed"
+          fi
+
+      - name: Build iOS app
+        run: dx build --platform ios --release
+
+      - name: Upload iOS artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-app
+          path: |
+            dist/
+            target/aarch64-apple-ios/release/zeta
+          retention-days: 7
+
+      - name: Create IPA (if signing configured)
+        if: false  # Enable this when you have signing certificates
+        run: |
+          # This would create an IPA file for distribution
+          # Requires proper signing certificates and provisioning profiles
+          echo "IPA creation requires signing certificates"
+
+  build-ios-simulator:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: aarch64-apple-ios-sim
+          override: true
+
+      - name: Add iOS simulator target
+        run: rustup target add aarch64-apple-ios-sim
+
+      - name: Cache cargo
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-ios-sim-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-ios-sim-
+
+      - name: Install Dioxus CLI
+        run: |
+          if ! command -v dx &> /dev/null; then
+            cargo install dioxus-cli --locked || cargo install dioxus-cli
+          else
+            echo "Dioxus CLI already installed"
+          fi
+
+      - name: Build for iOS Simulator
+        run: cargo build --target aarch64-apple-ios-sim --features ios --release
+
+      - name: Upload iOS Simulator artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-simulator-app
+          path: target/aarch64-apple-ios-sim/release/zeta
+          retention-days: 7

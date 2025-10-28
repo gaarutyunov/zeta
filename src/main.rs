@@ -1,13 +1,14 @@
-mod api;
 mod audio;
+mod components;
 mod db;
 mod models;
+mod transcription;
 
-use api::ClaudeClient;
+use components::Settings;
 use db::Database;
 use dioxus::prelude::*;
 use models::Note;
-use std::sync::Arc;
+use transcription::{TranscriptionConfig, TranscriptionProvider, TranscriptionService};
 
 #[cfg(feature = "web")]
 use base64::{engine::general_purpose::STANDARD as BASE64, Engine};
@@ -17,6 +18,7 @@ enum View {
     NoteList,
     NoteDetail(usize),
     CreateNote,
+    Settings,
 }
 
 fn main() {
@@ -31,17 +33,24 @@ fn App() -> Element {
     let mut search_query = use_signal(|| String::new());
     let mut is_loading = use_signal(|| false);
     let mut error_message = use_signal(|| Option::<String>::None);
-    let mut api_key = use_signal(|| String::new());
+    let mut transcription_config = use_signal(|| TranscriptionConfig::new());
 
     // Initialize database
     let db_resource = use_resource(move || async move {
         Database::new().await.ok()
     });
 
-    // Load API key from environment or local storage
+    // Load API keys from environment
     use_effect(move || {
+        let mut config = transcription_config.write();
         if let Ok(key) = std::env::var("ANTHROPIC_API_KEY") {
-            api_key.set(key);
+            config.claude_api_key = Some(key);
+        }
+        if let Ok(key) = std::env::var("OPENAI_API_KEY") {
+            config.openai_api_key = Some(key);
+        }
+        if let Ok(key) = std::env::var("GOOGLE_CLOUD_API_KEY") {
+            config.google_api_key = Some(key);
         }
     });
 
